@@ -3,18 +3,18 @@ package main
 import "math/rand"
 
 const restaurants = 65536
-const bitmapLength = restaurants / 8
+const bitmapLength = restaurants / (8 * 8)
 
 var (
-	nearMetro      = make([]byte, bitmapLength)
-	privateParking = make([]byte, bitmapLength)
-	terrace        = make([]byte, bitmapLength)
-	reservations   = make([]byte, bitmapLength)
-	veganFriendly  = make([]byte, bitmapLength)
-	expensive      = make([]byte, bitmapLength)
+	nearMetro      = make([]uint64, bitmapLength)
+	privateParking = make([]uint64, bitmapLength)
+	terrace        = make([]uint64, bitmapLength)
+	reservations   = make([]uint64, bitmapLength)
+	veganFriendly  = make([]uint64, bitmapLength)
+	expensive      = make([]uint64, bitmapLength)
 )
 
-func fill(r *rand.Rand, b []byte, probability float32) {
+func fill(r *rand.Rand, b []uint64, probability float32) {
 	for i := 0; i < len(b); i++ {
 		for j := uint(0); j < 8; j++ {
 			if r.Float32() < probability {
@@ -24,7 +24,7 @@ func fill(r *rand.Rand, b []byte, probability float32) {
 	}
 }
 
-func indexes(a []byte) []int {
+func indexes(a []uint64) []int {
 	var res []int
 	for i := 0; i < len(a); i++ {
 		for j := 7; j > 0; j-- {
@@ -37,19 +37,35 @@ func indexes(a []byte) []int {
 	return res
 }
 
-func and(a []byte, b []byte, res []byte) {
-	for i := 0; i < len(a); i++ {
+func and(a []uint64, b []uint64, res []uint64) {
+	i := 0
+	if len(a) != len(b) || len(b) != len(res) {
+		return
+	}
+
+loop:
+	if i < len(a) {
 		res[i] = a[i] & b[i]
+		i++
+		goto loop
 	}
 }
 
-func andnot(a []byte, b []byte, res []byte) {
-	for i := 0; i < len(a); i++ {
+func andnot(a []uint64, b []uint64, res []uint64) {
+	i := 0
+	if len(a) != len(b) || len(b) != len(res) {
+		return
+	}
+
+loop:
+	if i < len(a) {
 		res[i] = a[i] & ^ b[i]
+		i++
+		goto loop
 	}
 }
 
-func initData() ([]byte, []byte, []byte, []byte, []byte, []byte) {
+func initData() ([]uint64, []uint64, []uint64, []uint64, []uint64, []uint64) {
 	r := rand.New(rand.NewSource(10))
 	fill(r, nearMetro, 0.5)
 	fill(r, privateParking, 0.01)
